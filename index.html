@@ -55,7 +55,7 @@ body{background:radial-gradient(135% 105% at 50% 44%,#1c4432 0%,#143526 55%,#0C2
 #pic{position:absolute;inset:0;z-index:1;pointer-events:none;isolation:isolate;mix-blend-mode:screen;
      filter:invert(1) contrast(2.15) brightness(1.06) sepia(.62) saturate(2.4) hue-rotate(-12deg);
      opacity:0;will-change:transform,opacity}
-#pic .l{position:absolute;inset:-4%;background:url('assets/plate.jpg') center/cover no-repeat}
+#pic .l{position:absolute;inset:-4%;background:url('assets/plate.png') center/cover no-repeat}
 #pic .a{filter:grayscale(1)}
 #pic .b{filter:grayscale(1) invert(1) blur(2.4px);mix-blend-mode:color-dodge}
 
@@ -63,7 +63,7 @@ body{background:radial-gradient(135% 105% at 50% 44%,#1c4432 0%,#143526 55%,#0C2
 #pic2{position:absolute;inset:0;z-index:1;pointer-events:none;isolation:isolate;mix-blend-mode:screen;
       filter:invert(1) contrast(1.5) brightness(.95) sepia(.5) saturate(2) hue-rotate(-12deg);
       opacity:0;will-change:transform,opacity}
-#pic2 .l{position:absolute;inset:-4%;background:url('assets/plate.jpg') center/cover no-repeat}
+#pic2 .l{position:absolute;inset:-4%;background:url('assets/plate.png') center/cover no-repeat}
 #pic2 .a{filter:grayscale(1)}
 #pic2 .b{filter:grayscale(1) invert(1) blur(9px);mix-blend-mode:color-dodge}
 
@@ -795,7 +795,7 @@ addEventListener('orientationchange', () => setTimeout(() => { fitFilm(); checkO
 addEventListener('resize', checkOrientation);
 
 const playBtn = document.getElementById('play');
-const AUTO_MS = 186000;                       // 3:06 — темп, при котором длинные строки успевают прочитаться
+const AUTO_MS = 90000;                        // 1:30 — темп по решению владельца
 let auto = false, autoFrom = 0, autoAt = 0, autoBase = 0;
 
 function autoStop(){
@@ -825,13 +825,23 @@ playBtn.addEventListener('click', e => { e.stopPropagation(); auto ? autoStop() 
     autoStop();
   }, {passive:true, capture:true}));
 
+/* Фильм идёт бодро, но к финалу замедляется: последние 5% плёнки —
+   бата над юртами и плашка со знаком — получают 15% времени, иначе на такой
+   скорости благословение мелькнуло бы за секунду и его нельзя было бы прочесть. */
+const SLOW_AT = 0.85, SLOW_FROM = 0.95;
+function autoCurve(u){
+  return u <= SLOW_AT
+    ? (u / SLOW_AT) * SLOW_FROM
+    : SLOW_FROM + (1 - SLOW_FROM) * ((u - SLOW_AT) / (1 - SLOW_AT));
+}
 function autoTick(now){
   if (!auto) return;
   const max = filmwrap.offsetHeight - innerHeight;
+  const startU = autoBase / max;                    // если запустили не с начала
   const passed = now - autoAt;
-  const y = autoBase + (max - autoBase) * (passed / (AUTO_MS * (1 - autoBase / max || 1)));
-  if (y >= max){ window.scrollTo(0, max); autoStop(); return; }
-  window.scrollTo(0, y);
+  const u = startU + (1 - startU) * (passed / (AUTO_MS * (1 - startU)));
+  if (u >= 1){ window.scrollTo(0, max); autoStop(); return; }
+  window.scrollTo(0, autoCurve(u) * max);
 }
 
 /* ═══ ГОТОВНОСТЬ ═══ Не начинаем, пока не готовы шрифты и первые кадры плёнки:
