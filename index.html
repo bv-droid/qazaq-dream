@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Qazaq Dream</title>
+<meta name="description" content="Qazaq Dream — үй өмірлік іс емес, өмір сүретін орын болуы тиіс. Қоршаусыз көшелер, ортақ аула, балалы отбасына арналған аудан.">
+<meta name="theme-color" content="#143526">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Qazaq Dream">
+<meta property="og:description" content="Үй — өмір сүретін орын. Дом — место для жизни.">
+<meta property="og:image" content="assets/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/favicon.svg">
+<link rel="mask-icon" href="assets/favicon.svg" color="#143526">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Spectral:wght@200;300;400;500&display=swap" rel="stylesheet">
+<style>
+/* Веб-шрифт не подключаем: весь видимый текст — фирменные кривые (#wordG).
+   Страница работает офлайн и открывается двойным кликом. */
+:root{
+  /* Церемониальное — антиквой, рабочее — гротеском (правило бренд-книги).
+     Обе гарнитуры проверены на полный казахский набор ӘҒҚҢӨҰҮҺІ (18/18). */
+  /* ОДНА гарнитура на весь сайт: Spectral (200–500, казахский 18/18).
+     Иерархия строится весом, кеглем и трекингом — не сменой шрифтов. */
+  --ff:'Spectral',Georgia,serif;
+  --gold:#AE842B;         /* акцент бренда */
+  --gold-br:#E6C877;      /* светлое золото: канон, заголовки */
+  --gold-dim:#C9A85C;     /* приглушённое золото: подписи, вспомогательное */
+  --cream:#F4EFE2;
+  --cream-soft:#E4DCCB;   /* основной текст: мягче чистого крема, меньше режет глаз */
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{height:auto}
+body{background:radial-gradient(135% 105% at 50% 44%,#1c4432 0%,#143526 55%,#0C2419 100%) fixed;
+     font-family:var(--ff);-webkit-font-smoothing:antialiased}
+/* СТАРТ зафиксирован: вся титульная композиция живёт в #stage и не двигается,
+   скролл гонит плёнку. #scroller — только высота, он невидим. */
+#filmwrap{height:2450vh;position:relative}      /* трек соразмерен 3481 кадру */
+/* фон дублируется в сцене: #stage — свой стек-контекст, и screen-набросок
+   должен смешиваться именно с зелёным, иначе уходит в чёрный */
+#stage{position:sticky;top:0;height:100vh;overflow:hidden;
+       background:radial-gradient(135% 105% at 50% 44%,#1c4432 0%,#143526 55%,#0C2419 100%)}
+/* ПЛЁНКА — под наброском: набросок «проявляется» в реальный кадр */
+#film{position:absolute;inset:0;width:100%;height:100%;display:block;z-index:0;opacity:0}
+
+/* ГОРЫ ШТРИХАМИ — техника примера index_3d:
+   .a  = ч/б кадр
+   .b  = ч/б + инверсия + размытие, color-dodge поверх .a  → карандашный набросок
+   контейнер: invert → тёмная бумага со светлым штрихом; screen → штрих ложится на зелёный фон;
+   sepia+hue-rotate → штрих становится золотым. */
+#pic{position:absolute;inset:0;z-index:1;pointer-events:none;isolation:isolate;mix-blend-mode:screen;
+     filter:invert(1) contrast(2.15) brightness(1.06) sepia(.62) saturate(2.4) hue-rotate(-12deg);
+     opacity:0;will-change:transform,opacity}
+#pic .l{position:absolute;inset:-4%;background:url('assets/plate.png') center/cover no-repeat}
+#pic .a{filter:grayscale(1)}
+#pic .b{filter:grayscale(1) invert(1) blur(2.4px);mix-blend-mode:color-dodge}
+
+/* второй проход штриха — крупнее размытие: даёт мягкие «карандашные» массы поверх контуров */
+#pic2{position:absolute;inset:0;z-index:1;pointer-events:none;isolation:isolate;mix-blend-mode:screen;
+      filter:invert(1) contrast(1.5) brightness(.95) sepia(.5) saturate(2) hue-rotate(-12deg);
+      opacity:0;will-change:transform,opacity}
+#pic2 .l{position:absolute;inset:-4%;background:url('assets/plate.png') center/cover no-repeat}
+#pic2 .a{filter:grayscale(1)}
+#pic2 .b{filter:grayscale(1) invert(1) blur(9px);mix-blend-mode:color-dodge}
+
+/* портрет: подтягиваем хребет и долину ближе к знаку */
+@media (orientation:portrait){
+  #pic .l,#pic2 .l{background-position:50% 36%}
+  #markwrap{top:52%}
+  #wordSvg{top:calc(52% + min(29vmin,244px));width:min(58vmin,320px)}
+}
+
+/* зерно бумаги */
+#grain{position:absolute;inset:0;z-index:2;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+       background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/></filter><rect width='140' height='140' filter='url(%23n)'/></svg>")}
+
+/* виньетка + мягкий центр: знак не тонет в штриховке */
+#vig{position:absolute;inset:0;z-index:3;pointer-events:none;
+     background:radial-gradient(46% 52% at 50% 52%,rgba(10,26,18,.72) 0%,rgba(10,26,18,.34) 55%,rgba(10,26,18,0) 100%),
+                radial-gradient(120% 90% at 50% 46%,rgba(6,18,12,0) 40%,rgba(6,18,12,.62) 100%)}
+
+/* ЗНАК */
+#markwrap{position:absolute;left:50%;top:48%;width:min(56vmin,470px);height:min(56vmin,470px);
+          transform:translate(-50%,-50%);z-index:4}
+#mark{width:100%;height:100%;overflow:visible;display:block}
+.pl{fill:none;stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke}
+/* знак в цвет ворднейма — единый фирменный #E6C877; фактура держится
+   разными фильтрами и прозрачностью проходов, а не разными оттенками */
+.p1{stroke:#E6C877;stroke-width:3.2;filter:url(#pen1);opacity:1}
+.p2{stroke:#E6C877;stroke-width:2.0;filter:url(#pen2);opacity:.55}
+.p3{stroke:#E6C877;stroke-width:1.25;filter:url(#pen3);opacity:.30}
+
+/* ВОРДНЕЙМ — фирменный, в кривых (группа #wordmark из logo_full.svg), не веб-шрифт */
+#wordSvg{position:absolute;left:50%;top:calc(47% + min(27vmin,228px));transform:translateX(-50%);
+         width:min(42vmin,360px);z-index:4;display:block;overflow:visible;opacity:0}
+/* обводка в тот же цвет = оптическая жирность без искажения фирменных форм */
+#wordG path{fill:#E6C877;stroke:#E6C877;stroke-width:3.4;stroke-linejoin:round;paint-order:stroke fill}
+
+/* ═══ ТИТРЫ ═══ Одна гарнитура, крупно, из глубины. Иерархия — весом и кеглем. */
+#titres{position:absolute;inset:0;z-index:5;pointer-events:none;
+        perspective:900px;perspective-origin:50% 48%}
+.tt{position:absolute;left:50%;top:50%;width:min(90vw,1180px);text-align:center;opacity:0;
+    transform:translate(-50%,-50%);transform-style:preserve-3d;
+    will-change:transform,opacity,filter;backface-visibility:hidden;
+    color:var(--cream);font-family:var(--ff);font-weight:300;
+    font-size:clamp(26px,3.8vw,56px);line-height:1.32;letter-spacing:.002em;
+    text-shadow:0 1px 2px rgba(4,12,8,.85), 0 4px 40px rgba(4,12,8,.6)}
+
+/* Тезис — самый лёгкий вес в самом крупном кегле: так антиква дышит */
+.tt.thesis{font-weight:200;font-size:clamp(34px,7vw,116px);line-height:1.06;
+           letter-spacing:-.012em;color:var(--gold-br)}
+/* Канон — надпись: чуть плотнее, разрядка шире */
+.tt.canon{font-weight:300;font-size:clamp(28px,5vw,76px);line-height:1.22;
+          letter-spacing:.004em;color:var(--gold-br)}
+
+.tt.plate .kz{display:block;font-weight:300;font-size:clamp(30px,5.2vw,78px);
+              color:var(--gold-br);letter-spacing:.02em;line-height:1.1}
+.tt.plate .sub{display:block;margin-top:.7em;font-weight:400;
+               font-size:clamp(15px,1.6vw,21px);color:var(--cream-soft);letter-spacing:.03em}
+
+/* Карточка данных: цифра ультралёгкая и огромная, подписи — обычный вес */
+.tt.data .dl{display:block;font-weight:400;font-size:clamp(11px,1.05vw,14px);
+             letter-spacing:.34em;text-transform:uppercase;color:var(--gold-dim);margin-bottom:.55em}
+.tt.data .dn{display:block;font-weight:200;font-size:clamp(88px,17vw,260px);
+             line-height:.86;color:var(--gold-br);letter-spacing:-.028em}
+.tt.data .dn i{font-style:normal;font-weight:300;font-size:.26em;letter-spacing:.01em;
+               margin-left:.14em;vertical-align:.92em;color:var(--gold-dim)}
+.tt.data .dr{display:block;font-weight:400;font-size:clamp(16px,1.85vw,24px);line-height:1.9;
+             color:var(--cream-soft);letter-spacing:.012em}
+.tt.data .dr:first-of-type{margin-top:.85em}
+
+.tt.bata{font-weight:300;font-size:clamp(26px,4.4vw,68px);letter-spacing:.03em;
+         color:var(--gold-br);top:50%}
+
+@media (orientation:portrait){
+  .tt{width:min(92vw,640px);font-size:clamp(21px,5.6vw,34px)}
+  .tt.thesis{font-size:clamp(32px,10vw,60px)}
+  .tt.canon{font-size:clamp(25px,7.6vw,44px)}
+  .tt.plate .kz{font-size:clamp(27px,8.4vw,46px)}
+  .tt.data .dn{font-size:clamp(86px,32vw,180px)}
+  .tt.data .dr{font-size:clamp(15px,4.2vw,20px);line-height:1.75}
+}
+
+/* ═══ ПОКОЙ ДВИЖЕНИЯ ═══ Кто просит меньше анимации — получает историю целиком,
+   но короткой прокруткой и без инерции: кадры сменяются как страницы, а не как плёнка. */
+@media (prefers-reduced-motion: reduce){
+  #filmwrap{height:900vh}
+  .tt{transition:none}
+}
+
+/* ═══ ПОСЛЕ ФИЛЬМА ═══ */
+#breath{height:100vh;display:flex;align-items:center;justify-content:center;position:relative}
+#breath svg{width:min(30vmin,240px);height:auto;overflow:visible}
+#breath .pl{stroke-width:2.4}
+
+#say{max-width:min(90vw,680px);margin:0 auto;padding:0 0 14vh;
+     color:var(--cream-soft);font-family:var(--ff)}
+#say section{padding:10vh 0}
+#say h2{font-family:var(--ff);font-size:clamp(27px,3.9vw,48px);line-height:1.22;
+        font-weight:400;color:var(--gold-br);margin-bottom:.75em;letter-spacing:.008em}
+#say p{font-size:clamp(16px,1.85vw,19px);line-height:1.8;margin-bottom:1.15em;
+       letter-spacing:.004em}
+#say p.lead{font-size:clamp(18px,2.15vw,23px);line-height:1.65;color:var(--cream)}
+#say .note{color:var(--gold-dim);font-style:normal}
+#say ul{list-style:none;margin:1.2em 0}
+#say li{font-size:clamp(16px,1.85vw,19px);line-height:1.72;padding:.62em 0 .62em 1.5em;
+        position:relative;border-bottom:1px solid rgba(230,200,119,.09)}
+#say li::before{content:'';position:absolute;left:0;top:1.15em;width:.5em;height:1px;
+                background:var(--gold)}
+#say li b{font-weight:500;color:var(--gold-br);font-family:var(--ff);letter-spacing:.01em}
+#say .nums{display:flex;flex-wrap:wrap;gap:2.5em;margin:1.5em 0}
+#say .nums div{flex:1 1 180px}
+#say .nums .n{display:block;font-family:var(--ff);font-size:clamp(28px,3.6vw,44px);
+              color:var(--gold-br);line-height:1.15;letter-spacing:.01em}
+#say .nums .c{display:block;font-size:13.5px;color:var(--cream-soft);opacity:.72;
+              margin-top:.55em;line-height:1.55;letter-spacing:.02em}
+#say a{color:var(--gold-br);text-decoration:none;border-bottom:1px solid rgba(230,200,119,.35)}
+#say .status{font-size:14.5px;color:var(--gold-dim);border-left:1px solid rgba(230,200,119,.35);
+             padding-left:1.1em;letter-spacing:.015em}
+
+#bata{height:72vh;display:flex;flex-direction:column;align-items:center;justify-content:center;
+      text-align:center;gap:2.5em}
+#bata .line{font-family:var(--ff);color:var(--gold-br);
+            font-size:clamp(25px,3.7vw,46px);letter-spacing:.025em;line-height:1.35}
+#bata .mk{width:min(14vmin,110px);opacity:.55}
+
+
+/* ═══ ЯЗЫК ═══ казахский — по умолчанию (канон проекта) */
+#lang{position:fixed;top:22px;right:26px;z-index:60;display:flex;gap:2px;
+      font:500 12px/1 var(--text);letter-spacing:.16em}
+#lang button{background:none;border:0;color:var(--cream);opacity:.45;cursor:pointer;
+             padding:6px 9px;font:inherit;letter-spacing:inherit;transition:opacity .25s}
+#lang button:hover{opacity:.8}
+#lang button[aria-current="true"]{opacity:1;color:var(--gold-br)}
+#lang i{color:var(--cream);opacity:.25;font-style:normal;align-self:center}
+/* казахская типографика: PT Serif обязателен для ӘҒҚҢӨҰҮҺІ */
+/* Одна гарнитура Spectral покрывает казахский набор (18/18),
+   поэтому отдельная подмена гарнитуры для kk больше не нужна. */
+@media (max-width:640px){#lang{top:14px;right:12px}}
+
+/* ═══ ЗАГРУЗЧИК ═══ Кадры и шрифты должны быть готовы до первого движения. */
+#loader{position:fixed;inset:0;z-index:90;background:radial-gradient(135% 105% at 50% 44%,#1c4432 0%,#143526 55%,#0C2419 100%);
+        display:flex;align-items:center;justify-content:center;transition:opacity 1.1s ease}
+#loader.done{opacity:0;pointer-events:none}
+#loader .bar{width:min(34vw,240px);height:1px;background:rgba(230,200,119,.16);position:relative;overflow:hidden}
+#loader .bar i{position:absolute;inset:0 auto 0 0;width:0;background:var(--gold-br);transition:width .35s ease}
+
+/* ═══ ПОДСКАЗКА ═══ Без неё зритель не знает, что фильм ведёт прокрутка. */
+#footfade{position:fixed;left:0;right:0;bottom:0;height:26vh;z-index:54;pointer-events:none;
+          background:linear-gradient(rgba(6,16,11,0),rgba(6,16,11,.62));opacity:0;
+          transition:opacity 1s ease}
+#hint{position:fixed;left:50%;bottom:3.2vh;transform:translateX(-50%);z-index:55;opacity:0;
+      transition:opacity 1s ease;pointer-events:none;text-align:center;
+      font-family:var(--ff);font-weight:400;font-size:12px;letter-spacing:.32em;
+      text-transform:uppercase;color:var(--cream);mix-blend-mode:normal}
+#hint span{display:block;opacity:.82;text-shadow:0 1px 2px rgba(4,12,8,.9),0 2px 16px rgba(4,12,8,.8)}
+#hint .ln{display:block;width:1px;height:34px;margin:0 auto 14px;opacity:1;
+          background:linear-gradient(rgba(230,200,119,0),rgba(230,200,119,.85));
+          animation:drop 2.6s ease-in-out infinite}
+@keyframes drop{0%,100%{transform:scaleY(.35);opacity:.35;transform-origin:top}
+                50%{transform:scaleY(1);opacity:.9;transform-origin:top}}
+
+/* ═══ ПЛЁНКА ═══ Зерно и виньетка поверх кадра: объединяют разные клипы в одно кино. */
+#filmgrain{position:absolute;inset:-60px;z-index:3;pointer-events:none;opacity:0;
+           mix-blend-mode:overlay;
+           background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='g'><feTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='3'/></filter><rect width='180' height='180' filter='url(%23g)'/></svg>")}
+#filmvig{position:absolute;inset:0;z-index:3;pointer-events:none;opacity:0;
+         background:radial-gradient(118% 92% at 50% 48%,rgba(6,16,11,0) 46%,rgba(6,16,11,.55) 100%)}
+
+/* ═══ ПРОГРЕСС ═══ Тонкая линия: в пятиминутном фильме зритель должен видеть, где он. */
+#rail{position:fixed;right:26px;top:50%;transform:translateY(-50%);z-index:55;
+      width:1px;height:min(38vh,300px);background:rgba(230,200,119,.14);opacity:0;
+      transition:opacity .8s ease}
+#rail i{position:absolute;left:0;top:0;width:1px;height:0;background:var(--gold-br);
+        box-shadow:0 0 8px rgba(230,200,119,.5)}
+@media (max-width:820px){#rail{right:14px;height:26vh}#hint{bottom:5vh;font-size:11px}}
+</style>
+</head>
+<body>
+
+<svg style="position:absolute;width:0;height:0"><defs>
+<filter id="pen1" x="-10%" y="-10%" width="120%" height="120%">
+  <feTurbulence type="fractalNoise" baseFrequency="0.62" numOctaves="3" seed="5" result="n"/>
+  <feDisplacementMap in="SourceGraphic" in2="n" scale="2.6" xChannelSelector="R" yChannelSelector="G" result="d"/>
+  <feTurbulence type="fractalNoise" baseFrequency="1.9" numOctaves="2" seed="9" result="g"/>
+  <feColorMatrix in="g" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.35 1.06" result="ga"/>
+  <feComposite in="d" in2="ga" operator="in"/>
+</filter>
+<filter id="pen2" x="-10%" y="-10%" width="120%" height="120%">
+  <feTurbulence type="fractalNoise" baseFrequency="0.95" numOctaves="2" seed="17" result="n"/>
+  <feDisplacementMap in="SourceGraphic" in2="n" scale="3.4" xChannelSelector="R" yChannelSelector="G" result="d"/>
+  <feTurbulence type="fractalNoise" baseFrequency="2.6" numOctaves="2" seed="23" result="g"/>
+  <feColorMatrix in="g" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.5 1.1" result="ga"/>
+  <feComposite in="d" in2="ga" operator="in"/>
+</filter>
+<filter id="pen3" x="-10%" y="-10%" width="120%" height="120%">
+  <feTurbulence type="fractalNoise" baseFrequency="1.3" numOctaves="2" seed="31" result="n"/>
+  <feDisplacementMap in="SourceGraphic" in2="n" scale="4.2" xChannelSelector="R" yChannelSelector="G" result="d"/>
+  <feGaussianBlur in="d" stdDeviation="0.5"/>
+</filter>
+</defs></svg>
+
+<div id="loader"><div class="bar"><i></i></div></div>
+<div id="footfade"></div>
+<div id="hint"><span class="ln"></span><span data-kz="Айналдырыңыз" data-ru="Листайте">Айналдырыңыз</span></div>
+<div id="rail"><i></i></div>
+<nav id="lang" aria-label="Тіл / Язык">
+  <button type="button" data-loc="kz" aria-current="true">ҚАЗ</button><i>·</i><button type="button" data-loc="ru">РУС</button>
+</nav>
+
+<div id="filmwrap">
+<div id="stage">
+<canvas id="film"></canvas>
+<div id="pic2"><div class="l a"></div><div class="l b"></div></div>
+<div id="pic"><div class="l a"></div><div class="l b"></div></div>
+<div id="grain"></div>
+<div id="filmgrain"></div>
+<div id="filmvig"></div>
+<div id="vig"></div>
+
+<div id="markwrap"><svg id="mark" viewBox="150 75 760 760">
+  <g id="gA"><path class="pl p3"></path><path class="pl p2"></path><path class="pl p1"></path></g>
+  <g id="gB"><path class="pl p3"></path><path class="pl p2"></path><path class="pl p1"></path></g>
+  <g id="gC"><path class="pl p3"></path><path class="pl p2"></path><path class="pl p1"></path></g>
+</svg></div>
+<svg id="wordSvg" preserveAspectRatio="xMidYMid meet"><g id="wordG"></g></svg>
+
+<!-- ТИТРЫ: живут в сцене, привязаны к НОМЕРУ КАДРА, а не к проценту скролла -->
+<div id="scrim"></div>
+<div id="titres">
+  <div class="tt thesis" data-frame="110" data-dwell="130"
+       data-kz="Үй — өмір сүретін орын" data-ru="Дом — место для жизни">Үй — өмір сүретін орын</div>
+  <div class="tt plate" data-frame="452" data-dwell="90">
+    <span class="kz">Шаңырақ көтеру</span>
+    <span class="sub" data-kz="Аспанға ашық шеңбер. Оны бірге көтереді." data-ru="Круг, открытый небу. Его поднимают вместе.">Аспанға ашық шеңбер. Оны бірге көтереді.</span>
+  </div>
+  <div class="tt" data-frame="700" data-dwell="80"
+       data-kz="Арман бала қолынан басталады" data-ru="Мечта начинается с руки ребёнка">Арман бала қолынан басталады</div>
+  <div class="tt" data-frame="1020" data-dwell="90"
+       data-kz="Жиырма жыл құрылыс.&lt;br&gt;Аяқталмаған аула." data-ru="Двадцать лет стройки.&lt;br&gt;Недостроенный двор.">Жиырма жыл құрылыс.<br>Аяқталмаған аула.</div>
+  <div class="tt canon" data-frame="1290" data-dwell="130" data-canon
+       data-kz="Байыған сайын — қоршауыңды биіктетпе.&lt;br&gt;Дастарханыңды кеңейт." data-ru="Когда становишься богаче — не делай забор выше.&lt;br&gt;Делай стол шире.">Байыған сайын — қоршауыңды биіктетпе.<br>Дастарханыңды кеңейт.</div>
+  <div class="tt thesis" data-frame="1560" data-dwell="90"
+       data-kz="Біз үй емес — аудан саламыз" data-ru="Мы строим не дом — район">Біз үй емес — аудан саламыз</div>
+  <div class="tt" data-frame="1960" data-dwell="90"
+       data-kz="Аула мен көше үймен бірге тапсырылады" data-ru="Двор и улица сданы вместе с домом">Аула мен көше үймен бірге тапсырылады</div>
+  <div class="tt data" data-frame="2350" data-dwell="150"
+       data-kz="&lt;span class=&quot;dl&quot;&gt;Бір секция&lt;/span&gt;&lt;span class=&quot;dn&quot;&gt;120&lt;i&gt;м²&lt;/i&gt;&lt;/span&gt;&lt;span class=&quot;dr&quot;&gt;екі қабат · алты адам&lt;/span&gt;&lt;span class=&quot;dr&quot;&gt;ата-ана және төрт бала&lt;/span&gt;&lt;span class=&quot;dr&quot;&gt;екі балалар бөлмесі, әрқайсысы екеуге&lt;/span&gt;" data-ru="&lt;span class=&quot;dl&quot;&gt;Одна секция&lt;/span&gt;&lt;span class=&quot;dn&quot;&gt;120&lt;i&gt;м²&lt;/i&gt;&lt;/span&gt;&lt;span class=&quot;dr&quot;&gt;два этажа · шесть человек&lt;/span&gt;&lt;span class=&quot;dr&quot;&gt;родители и четверо детей&lt;/span&gt;&lt;span class=&quot;dr&quot;&gt;две детские, каждая на двоих&lt;/span&gt;"><span class="dl">Бір секция</span><span class="dn">120<i>м²</i></span><span class="dr">екі қабат · алты адам</span><span class="dr">ата-ана және төрт бала</span><span class="dr">екі балалар бөлмесі, әрқайсысы екеуге</span></div>
+  <div class="tt canon" data-frame="3090" data-dwell="130" data-canon
+       data-kz="Байыған сайын — қоршауыңды биіктетпе.&lt;br&gt;Дастарханыңды кеңейт." data-ru="Когда становишься богаче — не делай забор выше.&lt;br&gt;Делай стол шире.">Байыған сайын — қоршауыңды биіктетпе.<br>Дастарханыңды кеңейт.</div>
+  <div class="tt bata final" data-frame="3374" data-dwell="22" data-final
+       data-kz="Шаңырағың биік болсын" data-ru="Шаңырағың биік болсын">Шаңырағың биік болсын</div>
+</div>
+</div><!-- /stage -->
+</div><!-- /filmwrap -->
+
+
+<script id="vec">
+/* Кривые знака и ворднейма вшиты в страницу: файл открывается
+   двойным кликом, сервер не нужен (fetch на file:// запрещён CORS). */
+const LOGO_D = ["M 540.00,694.16 L 507.00,694.47 L 466.00,688.16 L 438.00,681.16 L 408.00,671.16 L 371.00,655.71 L 341.00,640.18 L 302.00,614.42 L 272.00,588.18 L 250.00,561.25 L 233.75,535.00 L 222.86,508.00 L 218.61,493.00 L 214.62,470.00 L 213.53,436.00 L 218.61,399.00 L 226.84,372.00 L 232.29,358.00 L 243.27,337.00 L 257.58,316.00 L 273.51,298.00 L 290.00,282.58 L 308.00,268.82 L 330.00,255.27 L 347.00,246.28 L 378.00,233.84 L 418.00,222.84 L 436.00,219.62 L 469.00,216.52 L 508.00,216.53 L 549.00,222.84 L 573.00,229.86 L 597.00,239.28 L 623.00,252.82 L 644.25,267.00 L 665.47,285.00 L 680.42,301.00 L 697.18,323.00 L 711.26,346.00 L 723.16,371.00 L 733.16,401.00 L 738.38,424.00 L 741.47,455.00 L 741.47,472.00 L 738.38,502.00 L 733.16,523.00 L 725.26,544.00 L 715.17,564.00 L 700.42,584.00 L 684.00,600.42 L 657.85,619.00 L 658.34,621.00 L 663.00,621.50 L 683.00,620.38 L 710.00,616.38 L 737.00,608.16 L 761.00,596.19 L 776.00,585.42 L 788.42,574.00 L 804.73,551.00 L 812.16,536.00 L 818.16,519.00 L 825.47,482.00 L 826.50,445.00 L 825.38,430.00 L 820.16,401.00 L 811.00,373.62 L 797.17,349.00 L 781.18,330.00 L 761.00,313.82 L 743.38,304.00 L 719.00,294.84 L 684.00,287.05 L 659.25,266.00 L 641.12,253.00 L 626.88,245.00 L 625.83,243.00 L 653.00,243.53 L 693.00,248.62 L 716.00,252.84 L 753.00,262.84 L 780.00,272.84 L 803.49,284.00 L 820.00,293.81 L 842.00,309.58 L 865.42,333.00 L 882.73,358.00 L 890.16,373.00 L 899.16,398.00 L 905.38,428.00 L 906.47,437.00 L 906.47,472.00 L 902.38,502.00 L 893.16,533.00 L 883.71,553.00 L 875.18,567.00 L 863.00,582.47 L 840.25,604.00 L 816.00,620.18 L 788.00,633.16 L 756.00,643.16 L 719.00,650.38 L 664.00,656.47 L 600.00,660.50 L 597.00,660.25 L 595.55,658.00 L 594.53,635.00 L 596.84,622.00 L 598.59,618.00 L 623.17,586.00 L 642.16,551.00 L 655.16,511.00 L 659.38,489.00 L 661.47,469.00 L 660.38,424.00 L 652.16,380.00 L 640.72,348.00 L 631.18,329.00 L 621.00,312.76 L 600.00,287.57 L 577.25,269.00 L 563.00,260.27 L 537.00,249.86 L 525.00,246.84 L 507.00,243.62 L 491.00,242.50 L 465.00,243.62 L 447.00,246.61 L 425.00,252.82 L 408.00,259.74 L 390.00,269.82 L 371.00,283.58 L 353.00,301.53 L 344.58,312.00 L 329.27,336.00 L 317.84,361.00 L 309.84,386.00 L 304.53,416.00 L 302.50,449.00 L 305.62,480.00 L 310.84,504.00 L 324.29,539.00 L 330.82,551.00 L 346.00,573.25 L 370.53,600.00 L 401.00,623.18 L 429.00,638.72 L 468.00,654.14 L 520.00,667.38 L 561.00,672.47 L 613.17,674.00 L 612.12,676.00 L 607.00,678.14 L 575.00,688.16 L 540.00,694.16 Z M 553.00,656.25 L 547.00,656.38 L 526.00,652.39 L 487.00,642.18 L 449.62,628.00 L 427.00,617.26 L 420.87,613.00 L 419.50,605.00 L 419.62,509.00 L 421.00,502.67 L 425.58,495.00 L 434.00,486.58 L 443.00,480.52 L 451.00,476.84 L 466.00,472.62 L 482.00,470.52 L 502.00,471.62 L 521.00,475.86 L 531.00,480.27 L 542.00,487.58 L 551.18,498.00 L 555.26,510.00 L 554.50,552.00 L 555.49,568.00 L 554.50,579.00 L 555.49,599.00 L 554.49,653.00 L 553.00,656.25 Z M 367.00,663.21 L 355.00,662.16 L 314.00,649.16 L 248.00,618.84 L 228.53,614.00 L 226.50,604.00 L 229.29,588.00 L 229.00,579.55 L 232.00,578.51 L 247.08,579.00 L 277.00,606.42 L 296.00,621.18 L 328.00,642.18 L 367.00,663.21 Z", "M 514.00,453.06 L 492.00,453.49 L 484.00,452.51 L 468.00,453.49 L 458.00,452.51 L 446.00,453.50 L 440.00,452.51 L 385.00,452.50 L 356.00,453.50 L 350.00,452.51 L 322.00,452.49 L 320.00,452.17 L 317.83,450.00 L 317.51,445.00 L 318.54,442.00 L 339.50,421.00 L 362.00,400.53 L 388.67,378.00 L 431.38,346.00 L 431.20,344.00 L 423.00,338.77 L 387.71,321.00 L 386.50,317.00 L 387.71,313.00 L 417.00,297.78 L 441.00,289.79 L 466.00,284.56 L 494.00,283.51 L 516.00,286.56 L 540.00,293.78 L 567.00,306.73 L 577.45,313.00 L 578.44,318.00 L 576.00,321.46 L 542.00,338.77 L 534.68,343.00 L 532.92,346.00 L 568.33,372.00 L 597.00,395.53 L 633.49,429.00 L 645.47,441.00 L 647.44,445.00 L 647.21,449.00 L 644.00,452.44 L 514.00,453.06 Z M 484.27,315.00 L 515.00,301.21 L 517.03,299.00 L 515.00,297.56 L 494.00,294.50 L 472.00,294.56 L 452.00,297.56 L 448.36,299.00 L 450.00,301.26 L 481.00,315.17 L 484.27,315.00 Z M 446.26,337.00 L 467.00,324.70 L 468.34,323.00 L 468.00,321.78 L 430.00,304.62 L 421.00,307.82 L 406.23,316.00 L 407.00,317.64 L 415.00,322.18 L 442.00,336.27 L 446.26,337.00 Z M 522.26,337.00 L 558.00,317.67 L 559.03,316.00 L 547.00,308.73 L 536.00,304.86 L 513.00,313.78 L 496.93,322.00 L 498.00,324.21 L 511.00,332.23 L 520.00,337.20 L 522.26,337.00 Z M 484.44,361.00 L 506.32,347.00 L 507.38,344.00 L 502.00,339.77 L 482.00,329.56 L 468.00,336.77 L 456.93,344.00 L 458.00,346.21 L 479.00,360.23 L 482.00,361.44 L 484.44,361.00 Z M 393.44,439.00 L 431.00,403.53 L 469.29,372.00 L 470.37,370.00 L 469.29,368.00 L 448.00,353.77 L 444.00,352.84 L 421.67,368.00 L 383.00,398.53 L 358.00,420.53 L 340.97,438.00 L 343.00,439.48 L 393.44,439.00 Z M 623.14,439.00 L 623.38,437.00 L 612.49,426.00 L 578.00,395.53 L 544.33,369.00 L 521.00,352.84 L 519.00,352.80 L 510.00,357.77 L 494.63,369.00 L 495.00,371.41 L 534.00,403.53 L 571.00,438.23 L 575.00,439.49 L 623.14,439.00 Z M 551.71,439.00 L 550.50,436.00 L 526.00,412.53 L 491.00,383.53 L 483.00,378.20 L 475.67,382.00 L 460.00,394.53 L 424.00,426.53 L 412.97,438.00 L 414.00,439.37 L 416.00,439.50 L 551.71,439.00 Z M 208.00,644.21 L 202.00,644.44 L 198.00,643.18 L 193.79,638.00 L 193.44,600.00 L 192.24,598.00 L 187.00,595.29 L 185.51,591.00 L 185.83,584.00 L 191.00,579.79 L 201.00,578.51 L 217.00,579.56 L 221.00,581.53 L 224.44,586.00 L 223.70,594.00 L 216.76,598.00 L 215.56,600.00 L 215.17,640.00 L 213.00,642.23 L 208.00,644.21 Z"];
+const WORD_D = ["M 215.00,876.32 L 203.00,876.32 L 177.00,870.32 L 173.00,868.68 L 169.00,868.32 L 153.00,863.68 L 140.00,861.51 L 131.00,861.51 L 119.00,864.32 L 116.09,864.00 L 118.00,861.50 L 123.00,857.67 L 137.43,848.00 L 139.30,846.00 L 139.23,845.00 L 129.00,844.49 L 122.00,843.32 L 109.00,839.32 L 95.00,830.25 L 88.67,823.00 L 82.68,812.00 L 80.68,806.00 L 79.51,799.00 L 79.51,785.00 L 81.68,775.00 L 85.67,766.00 L 90.67,758.00 L 99.00,749.50 L 111.00,741.68 L 125.00,736.68 L 132.00,735.51 L 143.00,735.49 L 146.00,734.68 L 158.00,735.68 L 176.00,741.68 L 184.43,747.00 L 192.50,755.00 L 198.32,765.00 L 201.32,775.00 L 202.49,782.00 L 202.49,790.00 L 201.51,793.00 L 201.32,798.00 L 197.32,809.00 L 192.00,818.43 L 186.25,825.00 L 180.43,830.00 L 168.00,838.32 L 151.00,844.67 L 147.94,848.00 L 149.00,849.31 L 154.00,849.68 L 173.00,854.32 L 177.00,854.68 L 184.00,857.32 L 188.00,857.68 L 195.00,860.32 L 212.00,864.49 L 218.00,864.51 L 221.00,865.49 L 224.00,865.49 L 237.79,863.00 L 236.50,866.00 L 230.00,871.33 L 226.00,872.68 L 224.00,874.32 L 215.00,876.32 Z M 147.50,839.00 L 156.00,837.32 L 165.00,832.33 L 172.00,825.43 L 178.32,816.00 L 181.32,807.00 L 182.49,801.00 L 182.49,783.00 L 179.32,770.00 L 177.32,765.00 L 170.50,754.00 L 162.00,746.67 L 155.00,742.68 L 140.00,739.52 L 137.00,740.49 L 131.00,740.68 L 123.00,743.68 L 115.57,748.00 L 112.25,752.00 L 110.00,753.57 L 105.67,760.00 L 100.68,772.00 L 98.69,789.00 L 99.49,791.00 L 99.51,799.00 L 100.68,805.00 L 104.67,815.00 L 110.50,824.00 L 118.57,832.00 L 128.00,837.32 L 137.00,839.49 L 147.50,839.00 Z M 261.00,842.07 L 256.00,841.32 L 254.00,840.33 L 249.00,833.69 L 242.00,836.67 L 238.00,839.32 L 226.00,842.49 L 218.00,840.32 L 213.00,836.43 L 210.68,832.00 L 209.91,826.00 L 210.68,821.00 L 212.50,818.00 L 217.00,813.67 L 221.00,811.68 L 248.00,804.25 L 249.49,799.00 L 249.49,794.00 L 248.32,789.00 L 246.00,785.50 L 242.00,782.68 L 238.00,781.51 L 234.00,781.50 L 229.00,782.68 L 225.67,786.00 L 223.00,791.25 L 219.00,792.49 L 215.00,792.32 L 213.68,791.00 L 213.68,788.00 L 215.57,786.00 L 219.00,783.68 L 221.00,783.32 L 223.00,781.67 L 234.00,776.68 L 243.00,774.51 L 248.00,774.51 L 253.00,775.68 L 257.00,777.67 L 261.00,781.57 L 263.32,786.00 L 263.51,793.00 L 264.49,796.00 L 263.91,801.00 L 264.31,805.00 L 263.51,807.00 L 263.51,811.00 L 264.49,814.00 L 264.31,819.00 L 263.69,820.00 L 264.49,825.00 L 263.51,828.00 L 263.68,830.00 L 265.00,832.43 L 268.00,835.32 L 273.00,835.33 L 276.00,833.70 L 277.22,834.00 L 277.30,835.00 L 269.00,840.32 L 261.00,842.07 Z M 370.00,842.32 L 365.00,842.49 L 361.00,841.32 L 357.00,839.33 L 353.00,835.43 L 350.52,827.00 L 352.68,819.00 L 358.00,813.67 L 364.00,810.68 L 371.00,809.32 L 379.00,806.68 L 387.00,805.32 L 389.00,804.25 L 390.07,795.00 L 389.32,790.00 L 387.33,786.00 L 385.43,784.00 L 379.00,781.51 L 373.00,781.68 L 369.00,783.67 L 366.00,786.57 L 363.43,791.00 L 360.00,792.32 L 355.57,792.00 L 354.68,791.00 L 354.68,788.00 L 360.00,783.67 L 372.00,777.68 L 378.00,775.68 L 383.00,774.51 L 388.00,774.51 L 396.00,776.68 L 398.43,778.00 L 401.33,781.00 L 403.32,784.00 L 404.49,788.00 L 404.68,830.00 L 407.00,833.50 L 410.00,835.32 L 417.00,834.22 L 417.22,835.00 L 415.00,837.33 L 410.00,840.32 L 406.00,841.49 L 399.00,841.49 L 393.57,839.00 L 391.00,834.57 L 389.00,833.52 L 379.00,839.32 L 373.00,840.68 L 370.00,842.32 Z M 476.00,880.32 L 468.09,880.00 L 473.32,874.00 L 474.49,868.00 L 474.23,833.00 L 473.00,832.69 L 461.00,839.32 L 455.00,841.32 L 450.00,842.49 L 444.00,842.32 L 435.00,838.33 L 429.50,833.00 L 425.68,827.00 L 423.68,821.00 L 422.51,815.00 L 422.51,807.00 L 423.68,801.00 L 426.67,794.00 L 431.00,787.57 L 434.57,784.00 L 442.00,778.67 L 451.00,775.68 L 456.00,774.69 L 467.00,774.51 L 485.00,777.49 L 497.90,778.00 L 497.00,779.30 L 492.00,781.50 L 489.51,786.00 L 489.49,848.00 L 488.93,850.00 L 489.49,852.00 L 489.68,868.00 L 492.00,871.32 L 498.59,872.00 L 497.00,873.30 L 476.00,880.32 Z M 334.00,841.32 L 318.00,841.49 L 314.00,840.51 L 311.00,841.49 L 306.00,841.49 L 304.00,840.69 L 301.00,841.49 L 293.00,840.93 L 291.00,841.48 L 288.00,840.51 L 281.76,840.00 L 281.68,838.00 L 282.67,836.00 L 292.33,824.00 L 298.75,814.00 L 300.25,813.00 L 301.67,810.00 L 320.06,785.00 L 319.00,783.69 L 314.00,783.49 L 311.00,782.51 L 308.00,783.07 L 302.00,782.51 L 296.00,783.68 L 292.00,785.50 L 288.68,789.00 L 287.00,793.43 L 285.00,794.23 L 284.51,786.00 L 285.49,783.00 L 285.68,778.00 L 287.00,775.75 L 291.00,775.51 L 296.00,776.49 L 341.24,777.00 L 341.32,779.00 L 340.33,781.00 L 322.67,804.00 L 303.52,832.00 L 304.00,833.25 L 308.00,834.32 L 313.00,833.51 L 317.00,834.07 L 329.00,833.32 L 335.00,830.50 L 338.32,826.00 L 339.75,822.00 L 342.00,821.77 L 341.49,832.00 L 340.32,837.00 L 337.00,840.32 L 334.00,841.32 Z M 462.50,832.00 L 467.00,831.32 L 472.00,828.33 L 474.32,826.00 L 474.49,788.00 L 471.00,782.75 L 467.00,780.68 L 457.00,779.51 L 449.00,781.68 L 443.67,786.00 L 438.68,796.00 L 437.51,803.00 L 437.51,808.00 L 439.68,817.00 L 441.68,822.00 L 446.00,827.50 L 452.00,831.32 L 457.00,832.49 L 462.50,832.00 Z M 239.50,833.00 L 245.00,831.33 L 249.32,827.00 L 249.00,808.76 L 245.00,808.68 L 235.00,811.68 L 230.57,814.00 L 226.68,819.00 L 225.69,824.00 L 228.75,831.00 L 233.00,833.32 L 239.50,833.00 Z M 382.50,833.00 L 389.00,829.25 L 390.32,827.00 L 390.49,818.00 L 389.68,814.00 L 390.48,811.00 L 389.00,808.68 L 386.00,808.68 L 382.00,810.32 L 379.00,810.68 L 370.00,814.75 L 366.68,821.00 L 366.51,824.00 L 367.68,828.00 L 370.57,832.00 L 375.00,833.49 L 382.50,833.00 Z", "M 605.00,841.32 L 547.00,841.50 L 544.76,841.00 L 545.00,838.76 L 552.00,837.32 L 554.32,835.00 L 555.49,831.00 L 555.51,824.00 L 556.50,820.00 L 556.49,759.00 L 555.51,756.00 L 555.49,746.00 L 554.33,743.00 L 553.00,741.67 L 551.00,740.67 L 546.00,740.30 L 545.10,739.00 L 612.00,738.51 L 615.00,739.49 L 620.00,739.68 L 632.00,743.68 L 642.00,749.67 L 648.00,755.57 L 654.33,765.00 L 657.32,773.00 L 658.49,779.00 L 658.49,794.00 L 657.32,801.00 L 654.32,810.00 L 651.33,816.00 L 643.00,826.50 L 630.00,835.32 L 618.00,839.32 L 612.00,840.49 L 607.00,840.51 L 605.00,841.32 Z M 606.50,835.00 L 616.00,832.32 L 624.00,828.33 L 631.00,821.43 L 634.33,816.00 L 638.32,807.00 L 640.49,794.00 L 640.49,787.00 L 638.32,775.00 L 631.33,761.00 L 622.00,751.67 L 612.00,746.68 L 600.00,743.68 L 577.00,743.68 L 574.75,745.00 L 573.51,748.00 L 573.68,829.00 L 575.57,833.00 L 582.00,835.32 L 606.50,835.00 Z M 704.00,841.30 L 671.00,841.49 L 668.94,840.00 L 670.00,838.69 L 674.00,838.32 L 676.50,836.00 L 678.49,830.00 L 678.32,790.00 L 677.25,786.00 L 674.00,783.68 L 670.00,783.24 L 670.00,780.76 L 680.00,778.32 L 689.00,774.68 L 692.00,774.76 L 692.68,786.00 L 693.76,788.00 L 695.00,788.30 L 699.50,782.00 L 707.00,775.68 L 711.00,774.51 L 716.00,774.51 L 719.25,776.00 L 720.49,782.00 L 719.32,789.00 L 717.42,792.00 L 716.00,792.31 L 713.00,788.75 L 711.00,787.67 L 705.00,785.69 L 698.57,789.00 L 695.00,792.57 L 693.68,795.00 L 693.68,834.00 L 696.00,837.33 L 698.00,838.32 L 703.00,838.68 L 704.93,840.00 L 704.00,841.30 Z M 765.00,842.32 L 753.00,842.32 L 749.00,841.32 L 741.00,837.33 L 735.50,832.00 L 732.67,828.00 L 729.68,821.00 L 728.51,815.00 L 728.51,804.00 L 729.68,799.00 L 731.68,794.00 L 736.00,787.57 L 741.57,782.00 L 745.00,779.67 L 751.00,776.68 L 759.00,774.51 L 769.00,774.68 L 775.00,776.68 L 780.00,779.67 L 785.33,786.00 L 789.49,797.00 L 789.25,801.00 L 787.00,802.32 L 779.00,802.51 L 776.00,803.49 L 752.00,803.51 L 744.75,805.00 L 743.93,807.00 L 744.68,813.00 L 747.67,821.00 L 754.57,828.00 L 759.00,830.32 L 763.00,831.49 L 774.00,831.49 L 781.00,829.32 L 787.00,825.68 L 790.23,826.00 L 790.00,827.41 L 785.00,832.50 L 778.00,837.33 L 772.00,840.32 L 765.00,842.32 Z M 852.00,842.32 L 850.00,842.32 L 844.00,840.33 L 839.00,833.93 L 836.00,834.68 L 824.00,841.32 L 820.00,842.49 L 814.00,842.49 L 810.00,841.32 L 807.57,840.00 L 803.00,835.43 L 800.68,831.00 L 800.51,823.00 L 801.68,819.00 L 804.00,815.75 L 807.00,813.67 L 816.00,809.68 L 836.00,805.32 L 838.43,804.00 L 839.49,802.00 L 839.49,793.00 L 838.32,788.00 L 833.00,782.68 L 828.00,781.50 L 825.00,781.51 L 821.00,782.68 L 815.50,787.00 L 813.00,791.25 L 810.00,792.49 L 805.00,792.24 L 804.68,788.00 L 807.57,785.00 L 815.00,780.68 L 822.00,777.68 L 834.00,774.51 L 838.00,774.51 L 843.00,775.68 L 846.00,776.68 L 850.00,779.57 L 852.32,783.00 L 854.49,791.00 L 854.68,832.00 L 858.00,835.32 L 862.00,835.32 L 866.00,833.52 L 867.23,834.00 L 867.30,835.00 L 865.00,837.33 L 857.00,841.32 L 852.00,842.32 Z M 998.00,841.31 L 965.77,841.00 L 965.70,840.00 L 967.00,838.68 L 970.00,838.32 L 972.50,836.00 L 974.32,832.00 L 974.49,797.00 L 973.32,791.00 L 971.50,788.00 L 967.00,784.68 L 963.00,784.50 L 953.00,786.68 L 947.00,789.67 L 944.51,793.00 L 944.68,834.00 L 947.00,837.33 L 953.41,839.00 L 954.06,840.00 L 953.41,841.00 L 923.00,841.32 L 921.70,840.00 L 921.77,839.00 L 927.00,837.25 L 929.49,832.00 L 929.49,793.00 L 927.33,788.00 L 925.00,785.67 L 922.00,784.51 L 917.00,784.50 L 914.00,784.68 L 904.00,788.67 L 900.67,792.00 L 899.51,795.00 L 899.51,805.00 L 900.50,809.00 L 900.49,816.00 L 899.51,819.00 L 899.68,832.00 L 900.68,835.00 L 902.00,836.50 L 905.00,838.32 L 909.00,838.76 L 909.24,841.00 L 877.00,841.32 L 875.70,840.00 L 876.00,838.77 L 880.00,838.32 L 882.00,837.33 L 884.49,834.00 L 884.49,789.00 L 883.00,785.75 L 878.00,784.32 L 876.31,783.00 L 878.00,781.68 L 892.00,777.32 L 898.00,774.52 L 899.24,775.00 L 900.09,778.00 L 899.68,783.00 L 900.75,785.00 L 902.00,785.48 L 918.00,776.68 L 925.00,774.68 L 930.00,774.51 L 938.00,777.67 L 941.33,781.00 L 943.50,785.00 L 946.00,786.31 L 953.00,781.67 L 963.00,776.68 L 969.00,774.68 L 975.00,774.51 L 979.00,775.68 L 983.00,777.67 L 985.33,780.00 L 988.32,786.00 L 989.32,790.00 L 989.68,835.00 L 994.00,838.32 L 998.41,839.00 L 999.06,840.00 L 998.00,841.31 Z M 772.43,798.00 L 773.49,796.00 L 773.49,791.00 L 770.33,784.00 L 768.00,781.67 L 763.00,779.51 L 756.00,779.68 L 751.00,782.50 L 746.68,788.00 L 744.52,796.00 L 745.00,797.43 L 747.00,798.49 L 772.43,798.00 Z M 829.50,833.00 L 833.00,832.32 L 837.00,830.33 L 839.32,828.00 L 839.00,808.76 L 835.00,808.68 L 822.00,813.67 L 818.00,817.57 L 816.68,820.00 L 816.68,827.00 L 818.50,830.00 L 823.00,833.32 L 829.50,833.00 Z"];
+</script>
+<script>
+/* ---------- знак: росчерк от шаңырака (механика index_3d) ---------- */
+const clamp01 = v => Math.min(1, Math.max(0, v));
+const ease = t => t<.5 ? 2*t*t : 1-Math.pow(-2*t+2,2)/2;
+const mark = document.getElementById('mark');
+let SEQ = [], LEN = 0;
+
+(function(){
+  const subs = d => d.split(/(?=M )/).map(s=>s.trim()).filter(Boolean);
+  const P0 = LOGO_D[0], P1 = LOGO_D[1];
+  const S1 = subs(P1), SH = S1.slice(0,8), TM = S1[8], S0 = subs(P0);
+  const CROWN = {cx:482.5, cy:304.5};                 // измерено в index_3d
+  const tmp = document.createElementNS('http://www.w3.org/2000/svg','path'); mark.appendChild(tmp);
+  const bb = a => { tmp.setAttribute('d', a.join(' ')); return tmp.getBBox(); };
+  const shSorted = SH.map(d=>{const b=bb([d]);
+      return {d,q:Math.hypot(b.x+b.width/2-CROWN.cx, b.y+b.height/2-CROWN.cy)};})
+      .sort((a,b)=>a.q-b.q).map(o=>o.d);
+  tmp.remove();
+  const grp = (id, arr) => {
+    const g = document.getElementById(id), ps = [...g.querySelectorAll('.pl')];
+    ps.forEach(p=>p.setAttribute('d', arr.join(' ')));
+    const L = ps[0].getTotalLength();
+    ps.forEach(p=>{p.style.strokeDasharray=L; p.style.strokeDashoffset=L;});
+    return {ps,L};
+  };
+  const GA = grp('gA', shSorted), GB = grp('gB',[S0[0],S0[2],TM]), GC = grp('gC',[S0[1]]);
+  LEN = GA.L+GB.L+GC.L;
+  SEQ = [[GA,0],[GB,GA.L],[GC,GA.L+GB.L]];
+  drawMark(0);
+  paintMark(['bgA','bgB','bgC']); paintMark(['fgA','fgB','fgC']);
+})();
+
+/* тот же знак на экране-дыхании и в бата-подвале */
+function paintMark(ids){
+  const src = [...document.querySelectorAll('#mark g')];
+  if (!src.length || !src[0].querySelector('path[d]')) return;   // знак ещё не собран
+  ids.forEach((id,i) => {
+    const g = document.getElementById(id); if (!g || g.childNodes.length) return;
+    [...src[i].children].forEach(p => {
+      const el = p.cloneNode(true);
+      el.style.strokeDasharray=''; el.style.strokeDashoffset='';
+      g.appendChild(el);
+    });
+  });
+}
+
+function drawMark(t){
+  const s = clamp01(t)*LEN;
+  SEQ.forEach(([G,off])=>{ const v = clamp01((s-off)/G.L);
+    G.ps.forEach(p=>p.style.strokeDashoffset = G.L*(1-v)); });
+}
+
+/* ---------- сцена: набросок проявляется, знак рисуется, дыхание + наклон ---------- */
+const pic = document.getElementById('pic'), pic2 = document.getElementById('pic2');
+const wordSvg = document.getElementById('wordSvg'), wordG = document.getElementById('wordG');
+
+/* ворднейм из лого-кита: кривые вставляются как есть, viewBox подгоняется по bbox */
+(function(){
+  WORD_D.forEach(d=>{
+    const el = document.createElementNS('http://www.w3.org/2000/svg','path');
+    el.setAttribute('d', d);
+    wordG.appendChild(el);
+  });
+  const b = wordG.getBBox(), pad = b.height*0.10;
+  wordSvg.setAttribute('viewBox',
+    `${(b.x-pad).toFixed(1)} ${(b.y-pad).toFixed(1)} ${(b.width+pad*2).toFixed(1)} ${(b.height+pad*2).toFixed(1)}`);
+  wordSvg.style.height = 'auto';
+})();
+let introPic=0, introPic2=0, introWord=0;
+let mx=.5,my=.5,px=.5,py=.5;
+addEventListener('mousemove',e=>{mx=e.clientX/innerWidth;my=e.clientY/innerHeight;});
+window.__cam = () => ({mx,my,px,py});          // QA
+addEventListener('touchmove',e=>{if(e.touches[0]){mx=e.touches[0].clientX/innerWidth;my=e.touches[0].clientY/innerHeight;}},{passive:true});
+
+
+/* ================= ПЛЁНКА: 24 клипа, 3408 кадров, 12 fps =================
+   Старт зафиксирован; скролл ведёт фильм. Набросок «проявляется» в первый кадр.
+   Память: анкеры каждый 32-й + скользящее окно, дальние кадры освобождаются. */
+
+/* ═══ ТИТРЫ ═══ Каждый привязан к номеру кадра и держится заданное число кадров,
+   поэтому при быстрой протяжке строка всё равно успевает прочитаться. */
+const scrimEl = document.getElementById('scrim');
+/* насколько глушим кадр под каждым типом строки: данные требуют больше всего покоя */
+const DIM = {data:0.86, thesis:0.62, canon:0.58, bata:0.45, plate:0.42, '':0.34};
+const TITRES = [...document.querySelectorAll('#titres .tt')].map(el => {
+  const k = ['data','thesis','canon','bata','plate'].find(c => el.classList.contains(c)) || '';
+  const parts = el.classList.contains('data') ? [...el.children] : null;
+  if (parts) parts.forEach(p => { p.style.willChange = 'opacity,transform'; });
+  return { el, at:+el.dataset.frame, dwell:+el.dataset.dwell||70, shown:0, dim:DIM[k], parts };
+});
+const FADE_IN = 30, FADE_OUT = 38;
+const smooth = t => t*t*(3-2*t);
+/* 3D под скролл: строка приходит из глубины, ВЕСЬ показ продолжает движение
+   к зрителю (привязано к номеру кадра — значит к самому скроллу), и уходит вперёд.
+   Текст никогда не «стоит»: он всё время идёт сквозь пространство кадра. */
+function renderTitres(cur, handover){
+  let dim = 0;
+  for (const t of TITRES){
+    const d = cur - t.at;
+    let a = 0, inn = 0, out = 0, hold = 0;
+    if (d >= -FADE_IN && d <= t.dwell + FADE_OUT){
+      if (d < 0){                       // подлёт из глубины
+        a = smooth((d + FADE_IN) / FADE_IN); inn = 1 - a; hold = 0;
+      } else if (d <= t.dwell){         // показ: медленный дрейф к зрителю
+        a = 1; hold = t.dwell ? d / t.dwell : 0;
+      } else {                          // уход вперёд
+        const u = (d - t.dwell) / FADE_OUT; a = 1 - smooth(u); out = u; hold = 1;
+      }
+    }
+    a = Math.min(1, Math.max(0, a)) * handover;
+    if (a <= 0.001){
+      if (t.shown > 0.001){ t.el.style.opacity = '0'; t.el.style.transform = ''; t.el.style.filter = ''; t.shown = 0; }
+      continue;
+    }
+    if (a * t.dim > dim) dim = a * t.dim;
+
+    const z    = -420*inn + (-30 + 60*hold) + 300*out;   // глубина: приход → дрейф → уход
+    const y    =   34*inn - 14*out;
+    const rx   =   11*inn - 5*out;                        // наклон плоскости текста
+    const blur = (7.5*inn + 6*out).toFixed(2);
+    if (t.el.classList.contains('bata') && BAND.h > 0){
+      /* нижняя треть кадра: благословение ложится под сюжет, а не поверх него */
+      t.el.style.top = (BAND.top + BAND.h * 0.80) + 'px';
+    }
+    t.el.style.opacity = a.toFixed(3);
+    t.el.style.transform =
+      `translate(-50%,-50%) translate3d(0,${y.toFixed(1)}px,${z.toFixed(1)}px) rotateX(${rx.toFixed(2)}deg)`;
+    t.el.style.filter = blur > 0.05 ? `blur(${blur}px)` : 'none';
+    t.shown = a;
+
+    /* карточка данных собирается по строкам: цифра приходит первой, подписи следом */
+    if (t.parts){
+      for (let i = 0; i < t.parts.length; i++){
+        const q = Math.min(1, Math.max(0, (a - i*0.12) / 0.55));
+        const el = t.parts[i];
+        el.style.opacity = q.toFixed(3);
+        el.style.transform = `translate3d(0,${((1-q)*18).toFixed(1)}px,0)`;
+      }
+    }
+  }
+  scrimEl.style.opacity = dim.toFixed(3);
+}
+
+const NF = 3481;
+const ROUGH = [1305, 2376, 3365];         // склейки сцен (дубль-клип 27 удалён)
+const BLEND = 14;
+/* ?v — версия монтажа: при переклейке файлы меняют содержимое, сохраняя имена,
+   и браузер показывал бы старые кадры из кэша. Поднимать при каждой пересборке. */
+const CUT_VERSION = 4;
+const fsrc = i => 'assets/film/f_' + String(i+1).padStart(4,'0') + '.jpg?v=' + CUT_VERSION;
+const frames = new Array(NF).fill(null);
+const CALM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const SMALL = matchMedia('(max-width:820px)').matches || (navigator.deviceMemory||8) <= 4;
+const STEP = CALM ? 12 : (SMALL ? 2 : 1);      // на телефоне берём каждый второй кадр — вдвое меньше памяти и трафика
+const ANCHOR = 32, KEEP = SMALL ? 90 : 220;
+
+function ensure(i){
+  if (i < 0 || i >= NF) return null;
+  let im = frames[i];
+  if (!im){ im = new Image(); im.decoding = 'async'; im.src = fsrc(i); frames[i] = im; }
+  return im;
+}
+function isAnchor(i){ return i % ANCHOR === 0; }
+function release(cur){
+  for (let i = 0; i < NF; i++){
+    if (!frames[i]) continue;
+    if (isAnchor(i)) continue;
+    if (Math.abs(i - cur) > KEEP){ frames[i].src = ''; frames[i] = null; }
+  }
+}
+for (let i = 0; i < NF; i += ANCHOR) ensure(i);            // грубая раскадровка сразу
+ROUGH.forEach(j => { for (let d = -2; d <= BLEND; d++) ensure(j - 1 + d); });
+
+function ready(i){ const im = frames[i]; return im && im.complete && im.naturalWidth ? im : null; }
+function nearest(i){                                        // ближайший загруженный
+  const im = ready(i); if (im) return im;
+  for (let d = 1; d < 48; d++){
+    const a = ready(i-d); if (a) return a;
+    const b = ready(i+d); if (b) return b;
+  }
+  for (let k = Math.round(i/ANCHOR)*ANCHOR, s = 0; s < NF; s += ANCHOR){
+    const a = ready(Math.max(0, Math.min(NF-1, k-s))); if (a) return a;
+    const b = ready(Math.max(0, Math.min(NF-1, k+s))); if (b) return b;
+  }
+  return null;
+}
+
+const filmCv = document.getElementById('film'), fx = filmCv.getContext('2d');
+/* Плотность полотна ограничена 1.5×: на 4K-экранах 2× даёт ~5 млн пикселей на кадр —
+   это лишняя работа при скрабе и упирается в лимиты композитора. */
+const DPR = Math.min(devicePixelRatio || 1, 1.5);
+function fitFilm(){ filmCv.width = Math.round(innerWidth*DPR); filmCv.height = Math.round(innerHeight*DPR); }
+/* при ресайзе полотно обнуляется — перерисовываем сразу, без ожидания кадра анимации */
+addEventListener('resize', () => { fitFilm(); if (typeof renderFilm === 'function') renderFilm(); });
+fitFilm();
+
+/* Мягкий фон-подложка: кадр в 1/16 размера, растянутый обратно — почти бесплатное
+   размытие без ctx.filter (тот дорог покадрово). */
+const BAND = {top:0, h:0};
+const bgCv = document.createElement('canvas'); bgCv.width = 60; bgCv.height = 26;
+const bgx = bgCv.getContext('2d');
+
+function paint(img, alpha, zoom){
+  if (!img) return;
+  const W = filmCv.width, H = filmCv.height;
+  const cover   = Math.max(W/img.width, H/img.height);
+  const contain = Math.min(W/img.width, H/img.height);
+  /* Кадр 2.34:1. На широком экране накрываем вьюпорт целиком; на узком cover срезал бы
+     до 80% ширины — там показываем кадр ЦЕЛИКОМ, а пустоту гасим размытой подложкой. */
+  /* Порог: если cover срезает умеренно (широкий экран) — заполняем вьюпорт целиком,
+     как и задумано. Если срезал бы катастрофически (телефон: до 80% ширины) —
+     показываем кадр целиком и гасим поля подложкой. */
+  const s = ((cover / contain) <= 1.55 ? cover : contain * 1.22) * (zoom||1);
+  const w = img.width*s, h = img.height*s;
+  /* запоминаем, где именно лежит кадр: титры-подписи должны садиться на него,
+     а не на середину экрана — иначе на широком мониторе строка накрывает сюжет */
+  BAND.top = (H-h)/2 / (DPR||1); BAND.h = h / (DPR||1);
+
+  if (w < W - 1 || h < H - 1){                 // остались поля — заполняем их
+    bgx.drawImage(img, 0, 0, bgCv.width, bgCv.height);
+    const bs = Math.max(W/bgCv.width, H/bgCv.height) * 1.06;
+    const bw = bgCv.width*bs, bh = bgCv.height*bs;
+    fx.globalAlpha = alpha;
+    fx.imageSmoothingEnabled = true; fx.imageSmoothingQuality = 'high';
+    fx.drawImage(bgCv, (W-bw)/2, (H-bh)/2, bw, bh);
+    fx.fillStyle = 'rgba(10,26,18,0.55)';      // притемняем, чтобы фон не спорил с кадром
+    fx.fillRect(0,0,W,H);
+    fx.globalAlpha = 1;
+  }
+  fx.globalAlpha = alpha;
+  fx.drawImage(img, (W-w)/2, (H-h)/2, w, h);
+  fx.globalAlpha = 1;
+}
+
+let scrollP = 0, filmP = 0, lastCur = -1, lastRelease = 0;
+/* Инерция плёнки: показываемый прогресс догоняет скролл, а не прыгает за ним.
+   0.085 ≈ 0.2 с догона на 60 fps — кадры текут, рывки колеса сглаживаются. */
+const GLIDE = CALM ? 1 : 0.085;
+const filmwrap = document.getElementById('filmwrap');
+addEventListener('scroll', () => {
+  /* прогресс считаем ТОЛЬКО по треку фильма: ниже начинается текст, он к плёнке не относится */
+  const max = filmwrap.offsetHeight - innerHeight;
+  scrollP = max > 0 ? Math.min(1, Math.max(0, scrollY / max)) : 0;
+}, {passive:true});
+
+/* Передача эстафеты: 0–3% скролла — набросок гаснет, кадр проявляется */
+function renderFilm(){
+  filmP += (scrollP - filmP) * GLIDE;             // догон с инерцией
+  if (Math.abs(scrollP - filmP) < 0.00002) filmP = scrollP;
+  const p = filmP;
+  const hand = clamp01(p / 0.03);                 // 0 = чистый старт, 1 = чистый фильм
+  const fp   = clamp01((p - 0.012) / 0.988);
+  let cur    = Math.min(NF-1, Math.round(fp * (NF-1)));
+  if (STEP > 1) cur = Math.min(NF-1, Math.round(cur/STEP)*STEP);   // квантование под шаг
+
+  if (cur !== lastCur){
+    /* грузим по ходу движения и с запасом к цели скролла, чтобы догон шёл по готовым кадрам */
+    const tgt = Math.min(NF-1, Math.round(clamp01((scrollP - 0.012)/0.988) * (NF-1)));
+    const dir = tgt >= cur ? 1 : -1;
+    lastCur = cur;
+    for (let d = 1; d <= 110; d++) ensure(cur + d*dir);
+    for (let d = 1; d <= 30; d++)  ensure(cur - d*dir);
+    ensure(tgt); ensure(tgt + dir*8); ensure(tgt + dir*16);
+    if (performance.now() - lastRelease > 900){ release(cur); lastRelease = performance.now(); }
+  }
+
+  filmCv.style.opacity = String(ease(hand));
+  fx.setTransform(1,0,0,1,0,0);
+  fx.clearRect(0,0,filmCv.width,filmCv.height);
+
+  const n = cur + 1;
+  let blended = false;
+  for (const j of ROUGH){
+    if (n > j && n <= j + BLEND){                            // морф через шов
+      const t = ease((n - j) / BLEND);
+      paint(nearest(j-1), 1, 1 + 0.06*t);
+      paint(nearest(cur), t, 1);
+      blended = true; break;
+    }
+  }
+  if (!blended) paint(nearest(cur), 1, 1);
+
+  renderTitres(cur, ease(hand));      // титры проявляются вместе с плёнкой
+
+  /* старт отдаёт экран фильму */
+  const fade = 1 - ease(hand);
+  pic.style.opacity  = String(0.96 * introPic  * fade);
+  pic2.style.opacity = String(0.42 * introPic2 * fade);
+  document.getElementById('grain').style.opacity = String(0.05 * fade);
+  document.getElementById('vig').style.opacity   = String(fade);
+  document.getElementById('markwrap').style.opacity = String(fade);
+  wordSvg.style.opacity = String(introWord * fade);
+}
+
+let T0 = performance.now();
+function loop(now){
+  const t = (now-T0)/1000;
+  px += (mx-px)*.04; py += (my-py)*.04;
+
+  /* набросок: контуры проявляются сразу, мягкие массы чуть позже */
+  introPic  = ease(clamp01(t/1.5));
+  introPic2 = ease(clamp01((t-0.5)/1.8));
+
+  /* дыхание кадра + лёгкий наклон от мыши (глубина реального рельефа) */
+  const bx = Math.sin(t*0.12)*0.5, by = Math.cos(t*0.09)*0.4;
+  const sc = 1.045 + Math.sin(t*0.07)*0.012;
+  const tx = (px-0.5)*-14 + bx, ty = (py-0.5)*-8 + by;
+  pic.style.transform  = `translate3d(${tx.toFixed(2)}px,${ty.toFixed(2)}px,0) scale(${sc.toFixed(4)})`;
+  pic2.style.transform = `translate3d(${(tx*0.55).toFixed(2)}px,${(ty*0.55).toFixed(2)}px,0) scale(${(sc*1.008).toFixed(4)})`;
+
+  /* знак карандашом → ворднейм проявляется слева направо, как ложится краска */
+  drawMark(ease(clamp01((t-0.9)/2.8))*1.02);
+  const w = ease(clamp01((t-3.6)/1.2));
+  introWord = w;
+  wordSvg.style.clipPath = `inset(0 ${(100-100*w).toFixed(1)}% 0 0)`;
+
+  renderFilm();                       // плёнка рисуется в том же цикле
+
+  /* подсказка появляется, когда интро дорисовано, и уходит от первого движения */
+  /* подсказка живёт только на старте: любое движение по треку убирает её насовсем */
+  if (scrollP > 0.004) userMoved = true;
+  if (!hintShown && t > 5.4 && !userMoved){
+    hintShown = true; hintEl.style.opacity = '1';
+    document.getElementById('footfade').style.opacity = '1';
+  }
+  if (userMoved){
+    hintEl.style.opacity = '0';
+    document.getElementById('footfade').style.opacity = '0';
+  }
+
+  /* зерно и виньетка проступают вместе с кадром и живут весь фильм */
+  const filmOn = ease(clamp01(scrollP / 0.03));
+  grainEl.style.opacity = (0.055 * filmOn).toFixed(3);
+  vigEl.style.opacity   = (0.9  * filmOn).toFixed(3);
+  grainEl.style.transform = `translate3d(${(t*37)%60 - 30}px,${(t*53)%60 - 30}px,0)`;
+
+  /* рельс прогресса: тонкая линия справа */
+  railEl.style.opacity = (0.9 * filmOn).toFixed(3);
+  railFill.style.height = (100 * scrollP).toFixed(2) + '%';
+
+  requestAnimationFrame(loop);        // цикл продолжает сам себя
+}
+
+/* ═══ ЯЗЫК ═══ Казахский — по умолчанию (канон проекта: фильм открывается на KZ).
+   Один набор узлов, текст подменяется из data-атрибутов — поэтому канон
+   остаётся ровно двумя узлами в любой локали и гард не ломается. */
+const LANG_KEY = 'qd-lang';
+function setLang(loc){
+  document.documentElement.lang = (loc === 'kz') ? 'kk' : 'ru';
+  document.querySelectorAll('[data-kz]').forEach(el => {
+    const v = (loc === 'kz') ? el.dataset.kz : el.dataset.ru;
+    if (v != null){
+      el.innerHTML = v;
+      const t = (typeof TITRES !== 'undefined') && TITRES.find(x => x.el === el);
+      if (t && t.parts) t.parts = [...el.children];
+    }
+  });
+  document.querySelectorAll('#lang button').forEach(b =>
+    b.setAttribute('aria-current', String(b.dataset.loc === loc)));
+  try { localStorage.setItem(LANG_KEY, loc); } catch(e){}
+}
+document.getElementById('lang').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (b) setLang(b.dataset.loc);
+});
+let startLang = 'kz';
+try { startLang = localStorage.getItem(LANG_KEY) || 'kz'; } catch(e){}
+setLang(startLang);
+
+/* ═══ ГОТОВНОСТЬ ═══ Не начинаем, пока не готовы шрифты и первые кадры плёнки:
+   иначе первое движение зрителя упирается в незагруженный кадр. */
+const loaderEl = document.getElementById('loader');
+const hintEl   = document.getElementById('hint');
+const railEl   = document.getElementById('rail');
+const railFill = railEl.firstElementChild;
+const grainEl  = document.getElementById('filmgrain');
+const vigEl    = document.getElementById('filmvig');
+
+const WARM = 48;                                  // сколько кадров ждём перед стартом
+let started = false, hintShown = false, userMoved = false;
+
+function boot(){
+  if (started) return; started = true;
+  loaderEl.classList.add('done');
+  setTimeout(() => loaderEl.remove(), 1300);
+  T0 = performance.now();                          // интро начинается ПОСЛЕ загрузки
+  requestAnimationFrame(loop);
+}
+(function warmup(){
+  const need = [];
+  for (let i = 0; i < WARM; i++) need.push(ensure(i));
+  let done = 0;
+  const bar = loaderEl.querySelector('.bar i');
+  const tick = () => {
+    done = need.filter(im => im && im.complete && im.naturalWidth).length;
+    bar.style.width = Math.round(100 * done / WARM) + '%';
+    if (done >= WARM) { bar.style.width = '100%'; setTimeout(boot, 260); }
+    else setTimeout(tick, 90);
+  };
+  Promise.race([
+    (document.fonts ? document.fonts.ready : Promise.resolve()),
+    new Promise(r => setTimeout(r, 2500))
+  ]).then(tick);
+  setTimeout(boot, 9000);                          // страховка: не держим зрителя дольше
+})();
+
+addEventListener('scroll', () => {
+  if (!userMoved && scrollY > 12){ userMoved = true; hintEl.style.opacity = '0'; }
+}, {passive:true});
+</script>
+</body>
+</html>
